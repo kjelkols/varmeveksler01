@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from models import AirStreamInput, ExchangerInput
-from heatmodels import HeatExchangerParameters, HeatExchangerResults
+from models import HeatExchangerParameters, HeatExchangerResults
 
 class SimulationOutput(BaseModel):
     airstream_1: AirStreamInput

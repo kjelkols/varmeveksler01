@@ -35,18 +35,20 @@
                     <th>Parameter</th>
                     <th>Verdi</th>
                 </tr>
+                <tr>
+                    <td>flow_arrangement</td>
+                    <td>
+                        <select name="flow_arrangement">
+                            <option value="counter-flow" {% if input_data['flow_arrangement'] == 'counter-flow' %}selected{% endif %}>counter-flow</option>
+                            <option value="cross-flow" {% if input_data['flow_arrangement'] == 'cross-flow' %}selected{% endif %}>cross-flow</option>
+                        </select>
+                    </td>
+                </tr>
                 {% for k in input_data['exchanger'].keys() %}
                 <tr>
                     <td>{{ k }}</td>
                     <td>
-                        {% if k == 'flow_arrangement' %}
-                        <select name="exchanger.flow_arrangement">
-                            <option value="counter-flow" {% if input_data['exchanger'][k] == 'counter-flow' %}selected{% endif %}>counter-flow</option>
-                            <option value="cross-flow" {% if input_data['exchanger'][k] == 'cross-flow' %}selected{% endif %}>cross-flow</option>
-                        </select>
-                        {% else %}
                         <input name="exchanger.{{k}}" type="number" step="any" value="{{ input_data['exchanger'][k] }}">
-                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -204,10 +206,15 @@ function getFormData() {
     for (const el of form.elements) {
         if (!el.name) continue;
         const [section, key] = el.name.split('.');
-        if (el.type === 'number') {
-            data[section][key] = parseFloat(el.value);
+        
+        if (section === 'exchanger' && key === 'flow_arrangement') {
+            data['flow_arrangement'] = el.value;
         } else {
-            data[section][key] = el.value;
+            if (el.type === 'number') {
+                data[section][key] = parseFloat(el.value);
+            } else {
+                data[section][key] = el.value;
+            }
         }
     }
     return data;

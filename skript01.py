@@ -1,9 +1,8 @@
 from pydantic import ValidationError
 from moistair import AirStream
 from report import Report
-from heatecxhanger import PlateHeatExchanger
-from models import AirStreamInput, ExchangerInput, SimulationInput, SimulationResult
-from heatmodels import HeatExchangerParameters, HeatExchangerResults
+from heatecxhanger import PlateHeatExchanger, FlowArrangement
+from models import AirStreamInput, ExchangerInput, SimulationInput, SimulationResult, HeatExchangerParameters, HeatExchangerResults
 from simulation_output import SimulationOutput
 
 def do_simulation(input_data: SimulationInput) -> SimulationOutput:
@@ -13,9 +12,18 @@ def do_simulation(input_data: SimulationInput) -> SimulationOutput:
     """
     airstream_1 = AirStream.from_dict(input_data.airstream_1.model_dump())
     airstream_2 = AirStream.from_dict(input_data.airstream_2.model_dump())
-    phex = PlateHeatExchanger(**input_data.exchanger.model_dump())
+    
+    exchanger_data = input_data.exchanger.model_dump()
+    phex = PlateHeatExchanger(**exchanger_data)
     params = phex.calculate_parameters(airstream_1, airstream_2)
-    results = PlateHeatExchanger.calculate_results(params, airstream_1, airstream_2, phex.flow_arrangement)
+    
+    results = PlateHeatExchanger.calculate_results(
+        params, 
+        airstream_1, 
+        airstream_2, 
+        input_data.flow_arrangement
+    )
+    
     return SimulationOutput(
         airstream_1=input_data.airstream_1,
         airstream_2=input_data.airstream_2,
@@ -24,18 +32,22 @@ def do_simulation(input_data: SimulationInput) -> SimulationOutput:
         results=results
     )
 
-def print_report(result: SimulationOutput) -> None:
+def print_report(result: SimulationOutput, flow_arrangement: FlowArrangement) -> None:
     """Skriver ut rapport basert på SimulationOutput fra do_simulation."""
     airstream_1 = AirStream.from_dict(result.airstream_1.model_dump())
     airstream_2 = AirStream.from_dict(result.airstream_2.model_dump())
-    phex = PlateHeatExchanger(**result.exchanger.model_dump())
+    
+    exchanger_data = result.exchanger.model_dump()
+    
+    phex = PlateHeatExchanger(**exchanger_data)
+    
     # Kombiner parametre og resultater til én state-aktig objekt for rapporten
     state = type('HeatExchangerState', (), {})()
     for k, v in result.parameters.model_dump().items():
         setattr(state, k, v)
     for k, v in result.results.model_dump().items():
         setattr(state, k, v)
-    Report.print_all(phex, state, airstream_1, airstream_2)
+    Report.print_all(phex, state, airstream_1, airstream_2, flow_arrangement)
 
 # Kjør en eksampelberegning
 if __name__ == "__main__":
@@ -59,16 +71,16 @@ if __name__ == "__main__":
             plate_thickness=0.0005,
             thermal_conductivity_plate=15.0,
             number_of_plates=30,
-            channel_height=0.005,
-            flow_arrangement="counter-flow"
-        )
+            channel_height=0.005
+        ),
+        flow_arrangement=FlowArrangement.COUNTER_FLOW
     )
 
     try:
         result = do_simulation(input_data)
         print(result.model_dump_json(indent=2))
         # For å skrive rapport til skjerm, bruk:
-        print_report(result)
+        print_report(result, input_data.flow_arrangement)
     except ValidationError as e:
         print("Input validation error:")
         print(e.json())

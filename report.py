@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from heatecxhanger import FlowArrangement
 if TYPE_CHECKING:
     from heatecxhanger import PlateHeatExchanger
     from moistair import AirStream
@@ -23,9 +24,9 @@ class Report:
             else:
                 print(f"{k:<30} {str(v):<25}")
     @staticmethod
-    def print_header(flow_arrangement: str) -> None:
+    def print_header(flow_arrangement: "FlowArrangement") -> None:
         print("="*90)
-        print(f"PLATEVARMEVEKSLER BEREGNING - {flow_arrangement.upper()}")
+        print(f"PLATEVARMEVEKSLER BEREGNING - {flow_arrangement.name.replace('_', ' ').upper()}")
         print("="*90)
 
     @staticmethod
@@ -110,14 +111,15 @@ class Report:
         exchanger,
         state: 'HeatExchangerState',
         airstream_1: 'AirStream',
-        airstream_2: 'AirStream'
+        airstream_2: 'AirStream',
+        flow_arrangement: "FlowArrangement"
     ) -> None:
         """
         Skriver ut resultater i tabellform med to kolonner.
         Deler opp utskriften i mindre metoder for bedre oversikt og utvidbarhet.
         """
         Report.print_input_summary(airstream_1, airstream_2, exchanger)
-        Report.print_header(exchanger.flow_arrangement)
+        Report.print_header(flow_arrangement)
         Report.print_geometry(exchanger)
         Report.print_air_properties(airstream_1, airstream_2)
         Report.print_flow_parameters(state, airstream_1, airstream_2)

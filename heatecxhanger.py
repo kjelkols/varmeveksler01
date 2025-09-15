@@ -2,11 +2,11 @@
 from flowcorrelations import flow_side_results
 import math
 from typing import TYPE_CHECKING
-from heatmodels import HeatExchangerParameters, HeatExchangerResults
+from models import HeatExchangerParameters, HeatExchangerResults
+from definitions import FlowArrangement
+
 if TYPE_CHECKING:
     from moistair import AirStream
-
-
 
 class PlateHeatExchanger:
     def __init__(
@@ -16,8 +16,7 @@ class PlateHeatExchanger:
         plate_thickness: float,
         thermal_conductivity_plate: float,
         number_of_plates: int,
-        channel_height: float,
-        flow_arrangement: str
+        channel_height: float
     ) -> None:
         # Geometriske parametre
         self.width = width          # Bredde [m]
@@ -26,7 +25,6 @@ class PlateHeatExchanger:
         self.thermal_conductivity_plate = thermal_conductivity_plate   # Varmeledningsevne plate [W/mK]
         self.number_of_plates = number_of_plates           # Antall plater (starter med stor N)
         self.channel_height = channel_height  # Kanalhøyde [m] (typisk verdi)
-        self.flow_arrangement = flow_arrangement # 'cross-flow' or 'counter-flow'
 
     @property
     def number_of_channels_side_1(self) -> int:
@@ -150,16 +148,16 @@ class PlateHeatExchanger:
         params: HeatExchangerParameters,
         airstream_1: 'AirStream',
         airstream_2: 'AirStream',
-        flow_arrangement: str
+        flow_arrangement: "FlowArrangement"
     ) -> HeatExchangerResults:
         """
         Beregner effekt, effektivitet og andre resultater basert på NTU og strømningstype.
         """
         c_r = params.c_min / params.c_max
         ntu = params.ntu
-        if flow_arrangement == 'cross-flow':
+        if flow_arrangement == FlowArrangement.CROSS_FLOW:
             effectiveness = 1 - math.exp((1/c_r) * ntu**0.22 * (math.exp(-c_r * ntu**0.78) - 1))
-        elif flow_arrangement == 'counter-flow':
+        elif flow_arrangement == FlowArrangement.COUNTER_FLOW:
             if c_r == 1:
                 effectiveness = ntu / (1 + ntu)
             else:
@@ -168,7 +166,7 @@ class PlateHeatExchanger:
                 effectiveness = numerator / denominator
         else:
             raise ValueError(f"Ukjent strømningsarrangement: {flow_arrangement}")
-        q_max = params.c_min * (airstream_1.temperature_c - airstream_2.temperature_c)
+        q_max = params.c_min * abs(airstream_1.temperature_c - airstream_2.temperature_c)
         q_actual = effectiveness * q_max
         return HeatExchangerResults(
             effectiveness=effectiveness,
