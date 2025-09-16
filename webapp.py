@@ -75,13 +75,8 @@ def report_html(result: SimulationOutput, flow_arrangement: FlowArrangement) -> 
     for k, v in result.results.model_dump().items():
         setattr(state, k, v)
     
-    import io, sys
-    buf = io.StringIO()
-    sys_stdout = sys.stdout
-    sys.stdout = buf
-    Report.print_all(phex, state, airstream_1, airstream_2, flow_arrangement)
-    sys.stdout = sys_stdout
-    return f"<pre>{buf.getvalue()}</pre>"
+    report_string = Report.get_report_string(phex, state, airstream_1, airstream_2, flow_arrangement)
+    return f"<pre>{report_string}</pre>"
 
 @app.route("/", methods=["GET"])
 def index():

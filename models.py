@@ -7,6 +7,18 @@ class AirStreamInput(BaseModel):
     phi: float
     pressure: float
 
+class AirStreamOutput(BaseModel):
+    """Pydantic-modell for en luftstrøm med alle beregnede egenskaper."""
+    mass_flow_rate: float
+    temperature_c: float
+    phi: float
+    pressure: float
+    rho: float
+    dynamic_viscosity: float
+    cp: float
+    k: float
+    prandtl: float
+
 class ExchangerInput(BaseModel):
     width: float
     length: float
@@ -17,6 +29,7 @@ class ExchangerInput(BaseModel):
 
 class HeatExchangerSide(BaseModel):
     """
+
     Samler alle relevante strømning- og varmeovergangsparametre for én side av varmeveksleren.
 
     Attributter:
