@@ -1,0 +1,13 @@
+{# Jinja2 template for rendering a model table #}
+<table border="1" cellpadding="4">
+  <tr>
+    <th></th>
+    {% for header in headers %}<th>{{ header }}</th>{% endfor %}
+  </tr>
+  {% for row in rows %}
+  <tr>
+    <td>{{ row.label }}</td>
+    {% for value in row.vals %}<td>{{ value }}</td>{% endfor %}
+  </tr>
+  {% endfor %}
+</table>

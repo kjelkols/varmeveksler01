@@ -1,0 +1,1 @@
+# Hjelpefunksjoner for rapportgenerator
