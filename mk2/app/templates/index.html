@@ -1,0 +1,47 @@
+    <!DOCTYPE html>
+    <html lang="no">
+    <head>
+            <meta charset="utf-8">
+            <title>Simulering</title>
+            <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+    
+    <div class="container">
+        <form method="post" id="sideform" class="simulator-form">
+            <input type="hidden" name="prev_sim" value="{{ selected_simulator_key }}">
+            <div class="sidebar">
+                <label for="simulator">Velg simulator:</label>
+                <select name="simulator" id="simulator" onchange="document.getElementById('sideform').submit()">
+                    {% for key, simobj in simulators.items() %}
+                        <option value="{{ key }}" {% if key == selected_simulator_key %}selected{% endif %}>{{ simobj.label }}</option>
+                    {% endfor %}
+                </select>
+                <input type="submit" value="Beregn">
+                <button type="button" onclick="downloadInput()">Last ned input</button>
+                <input type="file" id="uploadInputFile" accept="application/json" style="display:none" onchange="uploadInputFile(this)">
+                <button type="button" onclick="document.getElementById('uploadInputFile').click()">Last opp input</button>
+            </div>
+            <div class="main">
+                <h1>Simulator</h1>
+                {{ input_html|safe }}
+                {{ report_html|safe }}
+            </div>
+        </form>
+    </div>
+
+    <script>
+        window.input_json = {{ input_json|tojson }};
+        window.input_fields = {{ input_fields|tojson }};
+    </script>
+    <script src="/static/main.js"></script>
+    <script>
+        console.log('window.uploadInputFile:', typeof window.uploadInputFile);
+        if (typeof window.uploadInputFile !== 'function') {
+            alert('uploadInputFile er IKKE tilgjengelig i global scope!');
+        } else {
+            console.log('uploadInputFile er tilgjengelig i global scope.');
+        }
+    </script>
+    </body>
+    </html>

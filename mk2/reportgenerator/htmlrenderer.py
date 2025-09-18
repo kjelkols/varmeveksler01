@@ -8,12 +8,12 @@ import os
 
 
 class HTMLRenderer:
-    _row_template = Template('<tr><th><label for="$name">$label:</label></th><td>$input</td></tr>')
-    _table_template = Template('<table border=1 cellpadding=4>$rows</table>')
-    _input_number_template = Template('<input type="number" name="$name" id="$name" value="$value" step="$step">')
-    _input_text_template = Template('<input type="text" name="$name" id="$name" value="$value">')
-    _input_checkbox_template = Template('<input type="checkbox" name="$name" id="$name"$checked>')
-    _input_select_template = Template('<select name="$name" id="$name">$options</select>')
+    _row_template = Template('<tr class="input-row $row_class"><th class="input-label $label_class"><label for="$name">$label:</label></th><td>$input</td></tr>')
+    _table_template = Template('<table class="input-table" border=1 cellpadding=4 $style>$rows</table>')
+    _input_number_template = Template('<input type="number" name="$name" id="$name" value="$value" step="$step" class="input-field $extra_class">')
+    _input_text_template = Template('<input type="text" name="$name" id="$name" value="$value" class="input-field $extra_class">')
+    _input_checkbox_template = Template('<input type="checkbox" name="$name" id="$name" class="input-field"$checked>')
+    _input_select_template = Template('<select name="$name" id="$name" class="input-field">$options</select>')
     _option_template = Template('<option value="$value"$selected>$label</option>')
 
     def __init__(self):
@@ -27,21 +27,24 @@ class HTMLRenderer:
     def render_header(self, title: str, level: int) -> str:
         return f"<h{level}>{html.escape(title)}</h{level}>"
 
-    def render_row(self, name: str, label: str, input_html: str) -> str:
-        return self._row_template.substitute(name=name, label=html.escape(str(label)), input=input_html)
+    def render_row(self, name: str, label: str, input_html: str, row_class: str = "", label_class: str = "") -> str:
+        return self._row_template.substitute(name=name, label=html.escape(str(label)), input=input_html, row_class=row_class, label_class=label_class)
 
-    def render_table(self, rows: List[str]) -> str:
-        return self._table_template.substitute(rows="".join(rows))
+    def render_table(self, rows: List[str], table_style: Optional[str] = None, row_class: str = "", label_class: str = "") -> str:
+        style = f'style="{table_style}"' if table_style else ''
+        # rows is a list of html strings, but we want to inject row_class/label_class into each row
+        # så vi antar at render_row kalles med riktige klassenavn
+        return self._table_template.substitute(rows="".join(rows), style=style)
 
-    def render_input_number(self, name: str, value) -> str:
+    def render_input_number(self, name: str, value, extra_class: str = "") -> str:
         try:
             step = abs(float(value)) * 0.1 if value not in (None, "", 0) else 0.1
         except Exception:
             step = 0.1
-        return self._input_number_template.substitute(name=name, value=value, step=step)
+        return self._input_number_template.substitute(name=name, value=value, step=step, extra_class=extra_class)
 
-    def render_input_text(self, name: str, value) -> str:
-        return self._input_text_template.substitute(name=name, value=html.escape(str(value)))
+    def render_input_text(self, name: str, value, extra_class: str = "") -> str:
+        return self._input_text_template.substitute(name=name, value=html.escape(str(value)), extra_class=extra_class)
 
     def render_input_checkbox(self, name: str, value) -> str:
         checked = " checked" if value else ""

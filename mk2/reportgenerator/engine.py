@@ -42,7 +42,7 @@ class Engine:
         self.parts.append(self.renderer.render_table(rows))
         self.parts.append('<input type="submit" value="Beregn"></form>')
 
-    def write_model(self, model: BaseModel, fields: Optional[list[str]] = None):
+    def write_model(self, model: BaseModel, fields: Optional[list[str]] = None, table_style: Optional[str] = None):
         model_fields = type(model).model_fields
         field_names = fields if fields is not None else list(model_fields.keys())
         rows = []
@@ -51,7 +51,7 @@ class Engine:
             label = field.title or name
             value = getattr(model, name)
             rows.append(self.renderer.render_row(name, label, html.escape(str(value))))
-        self.parts.append(self.renderer.render_table(rows))
+        self.parts.append(self.renderer.render_table(rows, table_style=table_style))
 
     def write_model_table(self, models: list[BaseModel], headers: list[str], fields: Optional[list[str]] = None, title: Optional[str] = None):
         if title:
